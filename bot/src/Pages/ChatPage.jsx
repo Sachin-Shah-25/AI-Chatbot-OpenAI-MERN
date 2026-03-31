@@ -9,30 +9,31 @@ function ChatPage() {
 
 
 
-  const getUser = async () => {
-    const controller = new AbortController();
-    try {
-      
-      const isUser = await axios.get("https://ai-chatbot-openai-mern.onrender.com/me", {
-        withCredentials: true,
-        signal: controller.signal,
-      });
-      console.log(isUser)
-      if (isUser.status != 200) {
-        navigate("/signin")
-      }
+ useEffect(() => {
+    const controller = new AbortController()
+    
+    const checkUser = async () => {
+        try {
+            const isUser = await axios.get("https://ai-chatbot-openai-mern.onrender.com/me", {
+                withCredentials: true,
+                signal: controller.signal,
+            });
+            
+            if (isUser.status !== 200) {
+                navigate("/auth/signin")
+            }
+        }
+        catch (err) {
+            if (err.name === "CanceledError") return 
+            console.log(err.message)
+            navigate("/auth/signin")
+        }
     }
-    catch (err) {
-      console.log(err.message)
-
-    }
-    controller.abort()
-
-  }
-  useEffect(() => {
-    getUser();
-
-  }, [])
+    
+    checkUser()
+    
+    return () => controller.abort() 
+}, [])
   return <>
     <ChatBot />
   </>
