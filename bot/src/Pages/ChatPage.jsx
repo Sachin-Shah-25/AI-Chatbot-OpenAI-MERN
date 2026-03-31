@@ -12,7 +12,8 @@ function ChatPage() {
   const getUser = async () => {
     const controller = new AbortController();
     try {
-      const isUser = await axios.get("https://ai-chatbot-backend.onrender.com/me", {
+      
+      const isUser = await axios.get("https://ai-chatbot-openai-mern.onrender.com/me", {
         withCredentials: true,
         signal: controller.signal,
       });
