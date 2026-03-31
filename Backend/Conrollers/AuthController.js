@@ -56,8 +56,8 @@ export const SignInFun = async (req, res, next) => {
         console.log("5")
         res.cookie("token", usertoken, {
             httpOnly: true,
-            secure: true,
-            sameSite:"none",
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
             maxAge: 24 * 3 * 60 * 60 * 1000
         })
 
