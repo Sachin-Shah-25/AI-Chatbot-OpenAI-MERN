@@ -43,7 +43,7 @@ export const SignInFun = async (req, res, next) => {
             throw err;
         }
         console.log("3")
-        const real_password = bcrypt.compare(userpassword, userExists.userpassword)
+        const real_password = await bcrypt.compare(userpassword, userExists.userpassword)
         if (!real_password) {
             const err = new Error("Password doesn't Match");
             err.statusCode = 409;
