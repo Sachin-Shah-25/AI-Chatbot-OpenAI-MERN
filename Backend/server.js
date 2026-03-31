@@ -412,6 +412,6 @@ app.use((err, req, res, next) => {
 
 
 mongoose.connect(process.env.DATABASE_KEY).then(() => console.log("success")).catch((e) => console.log(e.message));
-app.listen(8000, function () {
+app.listen(process.env.PORT || 8000, function () {
     console.log("Server Started At : ", 8000);
 })
