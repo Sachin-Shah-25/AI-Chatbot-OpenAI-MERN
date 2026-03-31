@@ -20,13 +20,13 @@ function ChatPage() {
             });
             
             if (isUser.status !== 200) {
-                navigate("/auth/signin")
+                navigate("/signin")
             }
         }
         catch (err) {
             if (err.name === "CanceledError") return 
             console.log(err.message)
-            navigate("/auth/signin")
+            navigate("/signin")
         }
     }
     
