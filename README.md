@@ -2,7 +2,7 @@
 
 A full-stack AI-powered chatbot application built with the MERN Stack and OpenAI API. Users can sign up, log in, and have real-time conversations with an AI assistant.
 
-🌐 **Live Demo:** [Click Here](#) <!-- Vercel link yahan daalna -->
+🌐 **Live Demo:** [Click Here](https://ai-chatbot-open-ai-mern.vercel.app/signin) <!-- Vercel link yahan daalna -->
 
 ---
 
