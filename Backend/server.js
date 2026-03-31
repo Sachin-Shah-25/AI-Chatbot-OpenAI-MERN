@@ -192,7 +192,7 @@ function getAllDet(userState) {
 }
 let curr = true
 app.post("/bot/chat", async (req, res, next) => {
-    if (!req.cookies["token"]) {
+    if (!req.cookies.token) {
         return res.status(409).json({ isLogged: true, success: false, message: "Login Again" })
     }
     try {
