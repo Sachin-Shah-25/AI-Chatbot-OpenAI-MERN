@@ -19,13 +19,13 @@ A full-stack AI-powered chatbot application built with the MERN Stack and OpenAI
 ## 📸 Screenshots
 
 ### 🔑 Login Page
-![Login Page](./assets/login.jpg)
+![Login Page](./assets/signin.png)
 
 ### 📝 Signup Page
-![Signup Page](./assets/signup.jpg)
+![Signup Page](./assets/signup.png)
 
 ### 💬 Chatbot Interface
-![Chatbot](./assets/chatbot.jpg)
+![Chatbot](./assets/chat1.png)
 
 ---
 
