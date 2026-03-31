@@ -10,13 +10,13 @@ function ChatPage() {
 
 
  useEffect(() => {
-    const controller = new AbortController()
+   
     
     const checkUser = async () => {
         try {
             const isUser = await axios.get("https://ai-chatbot-openai-mern.onrender.com/me", {
-                withCredentials: true,
-                signal: controller.signal,
+                withCredentials: true
+               
             });
             
             if (isUser.status !== 200) {
@@ -24,15 +24,14 @@ function ChatPage() {
             }
         }
         catch (err) {
-            if (err.name === "CanceledError") return 
+             if (err.name === "CanceledError") return 
             console.log(err.message)
             navigate("/signin")
         }
     }
     
     checkUser()
-    
-    return () => controller.abort() 
+   
 }, [])
   return <>
     <ChatBot />
