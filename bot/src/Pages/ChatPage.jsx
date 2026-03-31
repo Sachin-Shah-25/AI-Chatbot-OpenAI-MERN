@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react'
 
 import axios from 'axios'
 
-function ChatPage(){
+function ChatPage() {
   const navigate = useNavigate()
 
-    
-  
+
+
   const getUser = async () => {
-      const controller = new AbortController();
+    const controller = new AbortController();
     try {
-      const isUser = await axios.get("http://localhost:8000/me", {
+      const isUser = await axios.get("https://ai-chatbot-backend.onrender.com/me", {
         withCredentials: true,
         signal: controller.signal,
       });
@@ -28,12 +28,12 @@ function ChatPage(){
     controller.abort()
 
   }
-    useEffect(()=>{
+  useEffect(() => {
     getUser();
 
-    },[])
-    return <>
-   <ChatBot/>
-    </>
+  }, [])
+  return <>
+    <ChatBot />
+  </>
 }
 export default ChatPage

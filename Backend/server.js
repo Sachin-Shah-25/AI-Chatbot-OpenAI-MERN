@@ -16,7 +16,7 @@ const app = express()
 
 
 const option = {
-    origin: ["http://localhost:5173"],
+    origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
     credentials: true
 }
 app.use(cors(option))

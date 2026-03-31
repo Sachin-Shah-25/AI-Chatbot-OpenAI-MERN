@@ -22,7 +22,7 @@ function SignIn() {
         setError("Invalid Details")
         return;
       }
-      const { data } = await axios.post("http://localhost:8000/auth/signin", userData, { withCredentials : true })
+      const { data } = await axios.post("https://ai-chatbot-backend.onrender.com/auth/signin", userData, { withCredentials : true })
 
       console.log(data)
       navigate("/")

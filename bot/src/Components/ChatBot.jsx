@@ -37,7 +37,7 @@ function ChatBox() {
             setBotLoading(false)
             try {
                 console.log(getuserIntput)
-                const { data } = await axios.post("http://localhost:8000/bot/chat",
+                const { data } = await axios.post("https://ai-chatbot-backend.onrender.com/bot/chat",
 
                     { message: getuserIntput },
                     { withCredentials: true })

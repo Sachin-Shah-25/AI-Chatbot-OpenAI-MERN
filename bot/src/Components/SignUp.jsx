@@ -27,7 +27,7 @@ function SignUp() {
                setError("Password too short")
                 return;
             }
-            const { data } = await axios.post("http://localhost:8000/auth/signup", userData, { withCrendential: true })
+            const { data } = await axios.post("https://ai-chatbot-backend.onrender.com/auth/signup", userData, { withCrendential: true })
 
             console.log(data)
 

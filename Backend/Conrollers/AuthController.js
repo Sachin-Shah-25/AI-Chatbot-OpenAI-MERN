@@ -56,7 +56,8 @@ export const SignInFun = async (req, res, next) => {
         console.log("5")
         res.cookie("token", usertoken, {
             httpOnly: true,
-            secure: false,
+            secure: true,
+            sameSite:"none",
             maxAge: 24 * 3 * 60 * 60 * 1000
         })
 
