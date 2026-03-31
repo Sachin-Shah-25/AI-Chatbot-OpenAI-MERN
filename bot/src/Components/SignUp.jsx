@@ -32,7 +32,7 @@ function SignUp() {
             console.log(data)
 
         }
-        catch (e) {
+        catch (err) {
             const erroCode = err.response.status
             console.log(err.response.data.message)
             if (erroCode >= 400 && erroCode < 500) {
