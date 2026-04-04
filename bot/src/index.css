@@ -12,6 +12,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+ 
 }
 
 .bot_img_container {
@@ -372,4 +373,29 @@ body {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+}
+
+
+@media (max-width:450px){
+  body{
+    align-items: flex-start;
+    justify-content: flex-start;
+    display:block
+  }
+  .chatbox{
+    width:100%;
+    height:100vh;
+    border-radius: 1px;
+  }
+  .chat_input {
+    border-radius:20px;
+    margin: 20px;
+    margin-top: 10px;
+    }
+  .chat_input button{
+    border-radius:20px;
+  }
+  .chat_input #chat_input_area{
+    border-radius:20px;
+  }
 }

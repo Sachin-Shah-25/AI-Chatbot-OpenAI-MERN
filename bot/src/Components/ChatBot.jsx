@@ -10,18 +10,24 @@ import receiveaudio from '../assets/receive.wav'
 import sendaudio from '../assets/send.mp3'
 import axios from 'axios'
 import { useState, useEffect, useRef } from 'react'
+import {useLocation} from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+const DABASE_URL = import.meta.env.VITE_DABASE_URL
 const controller = new AbortController();
 function ChatBox() {
     const [getuserIntput, setUserInput] = useState("")
     const [botLoading, setBotLoading] = useState(false)
+    const location = useLocation()
     const navigate = useNavigate()
     const ref = useRef(null)
     const send = useRef(null)
     const receive = useRef(null)
     const isTyping = useDebounce(getuserIntput);
     const showLoading = getuserIntput && isTyping;
-    const [askQuestion, setQuestion] = useState([{ bot: "Hi I am bot , How can I help" }])
+    const [askQuestion, setQuestion] = useState([{
+        by: "bot",
+        bot: "Hi I am bot , How can I help"
+    }])
     // const prev_App = PrevApp()
     const [getConfrim, setConfrim] = useState(false)
 
@@ -30,38 +36,39 @@ function ChatBox() {
     }
     const sendMessageFun = () => {
 
-        setQuestion((prev) => [...prev, { user: getuserIntput }])
+        setQuestion((prev) => [...prev, { by: "user", user: getuserIntput }])
         send.current?.play()
+        if (botLoading) {
+            return;
+        }
         setBotLoading(true)
         setTimeout(async () => {
             setBotLoading(false)
             try {
-                console.log(getuserIntput)
-                const { data } = await axios.post("https://ai-chatbot-openai-mern.onrender.com/bot/chat",
+                const { data } = await axios.post(`${DABASE_URL}/bot/chat`,
 
                     { message: getuserIntput },
                     { withCredentials: true })
-                console.log(data)
                 if (data.isLogged) {
                     navigate("/signin")
                 }
                 if (!data.success && !data.isConfirm) { // ask next queston
-                    setQuestion((prev) => [...prev, { bot: data.next }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.next }])
                 }
                 else if (!data.success && data.isConfirm) { //ask detail is Ok  
-                    setQuestion((prev) => [...prev, { bot: data.confirm }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.confirm }])
                 }
                 else if (data.success && data.isConfirm && !data.appDone) { // booked
-                    setQuestion((prev) => [...prev, { bot: data.message }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.message }])
                 }
                 else if (data.success && data.isConfirm && data.appDone) {  // Final Done 
-                    setQuestion((prev) => [...prev, { bot: `${data.message} 🙂 Appointment Id ${data.appid} If you want cancel Say "CANCEL"` }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: `${data.message} 🙂 Appointment Id ${data.appid} If you want cancel Say "CANCEL"` }])
                 }
                 else if (data.success && data.isConfirm && data.intent === "cancel") {  // Final Done 
-                    setQuestion((prev) => [...prev, { bot: data.message }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.message }])
                 }
                 else {
-                    setQuestion((prev) => [...prev, { bot: "couldn't find" }])
+                    setQuestion((prev) => [...prev, { by: "bot", bot: "couldn't find" }])
                 }
 
 
@@ -70,7 +77,6 @@ function ChatBox() {
 
                 const erroCode = err.response ? err.response.status : 500
 
-                // console.log(err.response.data.message)
                 if (erroCode >= 400 && erroCode < 500) {
                     setQuestion((prev) => [...prev, { bot: err.response ? err.response.data.message : "Interval Server Error" }])
                     // setQuestion()
@@ -84,6 +90,7 @@ function ChatBox() {
     }
 
     useEffect(() => {
+       
         ref.current?.scrollIntoView({ behavior: "smooth" });
     }, [askQuestion])
 
@@ -98,10 +105,9 @@ function ChatBox() {
             <div className="chat_messages" >
                 {
                     askQuestion.map((chat, index) => (
-
-                        index % 2 == 0 ?
-                            <BotMessage botrep={chat.bot} />
-                            : <UserMessage botrep={chat.user} />
+                        chat.by === "bot" ?
+                            <BotMessage key={chat.by.at(0) + index} botrep={chat.bot} />
+                            : <UserMessage key={chat.by.at(0) + index} botrep={chat.user} />
 
                     ))
                 }
@@ -123,8 +129,8 @@ function ChatBox() {
 
             </div>
 
-            <div className="chat_input">
-                <input type="text"
+            <div className="chat_input" >
+                <input type="text" id="chat_input_area"
                     value={getuserIntput}
                     onChange={(e) => { userInputFun(e) }}
                     placeholder="Type a message..."

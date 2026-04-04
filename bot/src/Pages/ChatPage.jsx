@@ -1,6 +1,7 @@
 import ChatBot from '../Components/ChatBot'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+const DABASE_URL = import.meta.env.VITE_DABASE_URL
 
 import axios from 'axios'
 
@@ -14,7 +15,7 @@ function ChatPage() {
     
     const checkUser = async () => {
         try {
-            const isUser = await axios.get("https://ai-chatbot-openai-mern.onrender.com/me", {
+            const isUser = await axios.get(`${DABASE_URL}/me`, {
                 withCredentials: true
                
             });

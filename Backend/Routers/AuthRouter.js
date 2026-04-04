@@ -5,7 +5,6 @@ const router=express.Router()
 
 
 router.post("/signup",(req,res,next)=>{
-    console.log("/signup ", req.body)
     next()
 },SignUpFun)
 

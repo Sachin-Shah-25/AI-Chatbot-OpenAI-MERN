@@ -17,6 +17,7 @@ const app = express()
 
 const option = {
     origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
+    // origin: ["http://localhost:5173"],
     credentials: true
 }
 app.use(cors(option))
@@ -93,7 +94,7 @@ async function findUserIntent(message) {
                     - If user provides personal details (name, age, phone, email, gender, department etc.) without explicitly saying "book", assume intent = "book"
 
                     -If user provides structured details like name, age, phone, email, gender etc. → set intent = "book" (assume user is in booking flow)
-                    x
+                    
                     - Extract date and time if mentioned
                     - Convert relative terms:
                     - "today", "aaj"
@@ -151,6 +152,8 @@ async function helpUser(message) {
                  - keep result clean 
                  - Don't write bullet
                  - Bold Department and Symptoms word
+                 - In normal converstion ask user health issue
+                 - If user say No or no then say Sure with emoji
                Format: 
 
                 Symptoms you are facing:
@@ -202,6 +205,7 @@ app.post("/bot/chat", async (req, res, next) => {
         const datafileds =
             ["name", "age", "gender", "email", "phone", "date", "time", "dep"];
         const isData = datafileds.every(field => !intent[field])
+
         if (isData && intent.intent == 'general' && isNaN(Number.parseInt(message))) {
             if (!getAllDet(userState)) {
 
@@ -225,7 +229,6 @@ app.post("/bot/chat", async (req, res, next) => {
         }
 
 
-        // 88888888888888888888 Cancelleation Proccess 88888888888888
         curr = null
         if (cancel && intent.intent != "book") {
             curr = null
