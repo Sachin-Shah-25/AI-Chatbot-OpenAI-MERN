@@ -141,7 +141,7 @@ async function helpUser(message) {
         messages: [
             {
                 role: "system",
-                content: `You are a doctor and also a friendly boy to give advice according to user health condition and give medicale advice after focusing user's symptons and give answer in English langauge 
+                content: `you are a doctor and suggest department according user symptons . don't give answer of all question just give when user tell about health realated topic other wise say I didn't get it Is it is health related issue . 
                 
                  Rules:
                  - Give answer in one english.
@@ -152,8 +152,7 @@ async function helpUser(message) {
                  - keep result clean 
                  - Don't write bullet
                  - Bold Department and Symptoms word
-                 - In normal converstion ask user health issue
-                 - If user say No or no then say Sure with emoji
+                 
                Format: 
 
                 Symptoms you are facing:
@@ -201,6 +200,7 @@ app.post("/bot/chat", async (req, res, next) => {
     try {
         const { message } = req.body;
         const getIntent = await findUserIntent(message)
+        console.log(getIntent)
         const intent = JSON.parse(getIntent)
         const datafileds =
             ["name", "age", "gender", "email", "phone", "date", "time", "dep"];
@@ -216,7 +216,7 @@ app.post("/bot/chat", async (req, res, next) => {
                 curr = "advice"
 
                 const aiHelp = await helpUser(message)
-                return res.status(201).json({ success: false, isConfirm: false, next: `${aiHelp} may I book appointmen for you ` });
+                return res.status(201).json({ success: false, isConfirm: false, next: `${aiHelp} ` });
             }
         }
 
@@ -228,7 +228,7 @@ app.post("/bot/chat", async (req, res, next) => {
             cancel = "cancel"
         }
 
-
+        
         curr = null
         if (cancel && intent.intent != "book") {
             curr = null
