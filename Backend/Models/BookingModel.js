@@ -21,6 +21,9 @@ const bookingSchema = new mongoose.Schema({
     email: {
         type: String
     },
+    time:{
+        type:String
+    },
     phone: {
         type: String
     },

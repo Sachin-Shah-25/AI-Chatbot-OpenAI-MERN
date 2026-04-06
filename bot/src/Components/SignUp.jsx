@@ -26,7 +26,6 @@ function SignUp() {
         setTimeout(async () => {
             setLoading(false)
             try {
-                console.log(userData)
                 if (!userData["username"] || !userData["userpassword"] || !userData["useremail"]) {
                     setError("Invalid Details")
                     return;

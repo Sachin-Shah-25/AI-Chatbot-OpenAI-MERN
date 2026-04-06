@@ -10,10 +10,11 @@ import Groq from 'groq-sdk'
 import booking from './Models/BookingModel.js'
 import jwt from 'jsonwebtoken'
 import authenticationModel from './Models/AuthModel.js'
+import create_doc_data from './Models/DoctorsModel.js'
 
 const app = express()
 
-
+// "Dermatology"
 
 const option = {
     origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
@@ -92,7 +93,10 @@ async function findUserIntent(message) {
                     - If user message contains only a number:
                     - If length is 10 → treat as phone number
                     - If user provides personal details (name, age, phone, email, gender, department etc.) without explicitly saying "book", assume intent = "book"
+                     - If use ask about history then set intent value "history"
+                     - If user say about logout or signout then set intent value "logout"
 
+                    
                     -If user provides structured details like name, age, phone, email, gender etc. → set intent = "book" (assume user is in booking flow)
                     
                     - Extract date and time if mentioned
@@ -152,6 +156,18 @@ async function helpUser(message) {
                  - keep result clean 
                  - Don't write bullet
                  - Bold Department and Symptoms word
+                 - department should be any of these 
+                                    "Pediatrics",
+                                    "Oncology",
+                                    "Radiology",
+                                    "Orthopedics",
+                                    "Urology",
+                                    "Gynecology",
+                                    "Neurology",
+                                    "Psychiatry",
+                                    "ENT",
+                                    "Dermatology"
+
                  
                Format: 
 
@@ -168,7 +184,7 @@ async function helpUser(message) {
                 - Body pain
 
                 Department:
-                - General Medicine
+                - Orthopedics
                 `
             }
             ,
@@ -200,8 +216,48 @@ app.post("/bot/chat", async (req, res, next) => {
     try {
         const { message } = req.body;
         const getIntent = await findUserIntent(message)
-        console.log(getIntent)
+
         const intent = JSON.parse(getIntent)
+
+        if (intent.intent == "logout") {
+            resetFun();
+            res.cookie("token", "", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+                maxAge: 0
+            });
+            return res.status(201).json({ success: true, isConfirm: true, appDone: false, message: "You have logout. " })
+        }
+        const getDt = intent.date
+        if (getDt) {
+            const getDate = new Date()
+            getDate.setDate(getDate.getDate() + 1)
+
+            const getNextDayDate = getDate.toISOString().split("T")[0]
+
+            if (getDt !== getNextDayDate) {
+                return res.status(201).json({ success: true, isConfirm: true, appDone: false, message: "Sorry! Only next day appointment can book. " })
+            }
+
+        }
+
+        if (intent.intent == "history") {
+            const alreadyApp = await checkApp(req, res, next);
+            if (alreadyApp && alreadyApp.length > 0) {
+                return res.status(201).json({
+                    success: false,
+                    isConfirm: false,
+                    allReady: alreadyApp,
+                    history: true,
+                    msg:
+                        "You have already booked with this department. If you want cancel Say CANCEL"
+                });
+            }
+            else{
+                 return res.status(409).json({ success: false, isConfirm: false, message: "You have not booked yet ." })
+            }
+        }
         const datafileds =
             ["name", "age", "gender", "email", "phone", "date", "time", "dep"];
         const isData = datafileds.every(field => !intent[field])
@@ -214,7 +270,7 @@ app.post("/bot/chat", async (req, res, next) => {
                     return res.status(201).json({ success: false, isConfirm: false, next: "Enter Your Name" });
                 }
                 curr = "advice"
-
+                // Pediatrics
                 const aiHelp = await helpUser(message)
                 return res.status(201).json({ success: false, isConfirm: false, next: `${aiHelp} ` });
             }
@@ -228,18 +284,34 @@ app.post("/bot/chat", async (req, res, next) => {
             cancel = "cancel"
         }
 
-        
+
         curr = null
         if (cancel && intent.intent != "book") {
             curr = null
             booked = null
-
             if (!isNaN(Number.parseInt(message))) {
                 return await cancelApp(req, res, next, message)
             }
             return res.status(201).json({ success: false, isConfirm: false, next: "Enter Appointment Id" });
         }
 
+
+        const alreadyApp = await checkApp(req, res, next)
+        if (alreadyApp && alreadyApp.length != 0) {
+            const getDepList = alreadyApp.map(det => det.dep);
+            const dep = intent.dep
+            const result = getDepList.some((name) => name === dep)
+            // return res.status(200).json({ success: false, allReady: getDepList.some((name) => name === dep) });
+            if (result) {
+                return res.status(201).json({
+                    success: false,
+                    isConfirm: false,
+                    allReady: result,
+                    msg:
+                        "You have already booked with this department. If you want cancel Say CANCEL"
+                });
+            }
+        }
 
 
         datafileds.forEach((field) => {
@@ -271,13 +343,15 @@ app.post("/bot/chat", async (req, res, next) => {
             return res.status(200).json({ success: false, isConfirm: false, next: "Enter Appointment Date" });
         }
 
-        if (!userState.state.data.time) {
-            return res.status(200).json({ success: false, isConfirm: false, next: "Enter Appointment Time" });
-        }
-
         if (!userState.state.data.dep) {
+
             return res.status(200).json({ success: false, isConfirm: false, next: "Which Department d you want to consult ?" });
         }
+        if (!userState.state.data.time) {
+            const getData = await create_doc_data.find({ dep: userState.state.data.dep });
+            return res.status(200).json({ success: false, isConfirm: false, next: "Enter Appointment Time", time: getData || false });
+        }
+
 
 
         if (getAllDet(userState)) {
@@ -287,6 +361,9 @@ app.post("/bot/chat", async (req, res, next) => {
                 return res.status(200).json({ success: false, isConfirm: false, next: "You want to book Appointement ?" });
             }
 
+            if(message=="yes"){
+                booked=="book"
+            }
             if (message == "yes" && booked == "book") {
                 return await saveApp(req, res, next)
             }
@@ -319,9 +396,25 @@ app.post("/bot/chat", async (req, res, next) => {
 
 
 })
-
-
-
+function resetFun() {
+    userState = {
+        intent: "",
+        state: {
+            data: {
+                age: null,
+                name: null,
+                gender: null,
+                email: null,
+                phone: null,
+                date: null,
+                time: null,
+                dep: null
+            }
+        }
+    }
+    booked = null;
+    cancel = null;
+}
 async function saveApp(req, res, next) {
     try {
         const token = req.cookies["token"]
@@ -342,23 +435,7 @@ async function saveApp(req, res, next) {
             ...userState.state.data,
             appid
         })
-        userState = {
-            intent: "",
-            state: {
-                data: {
-                    age: null,
-                    name: null,
-                    gender: null,
-                    email: null,
-                    phone: null,
-                    date: null,
-                    time: null,
-                    dep: null
-                }
-            }
-        }
-        booked = null;
-        cancel = null;
+        resetFun()
         return res.status(200).json({ success: true, isConfirm: true, appDone: true, message: "Appointement Done", appid })
     } catch (e) {
         next(e)
@@ -368,12 +445,13 @@ async function saveApp(req, res, next) {
 async function cancelApp(req, res, next, message) {
     try {
         const token = req.cookies["token"]
+
         if (!token) {
             return res.status(409).json({ success: false, message: "Login Again" })
         }
 
         const isHasAppointment = await booking.findOneAndDelete({ appid: message })
-        if (!isHasAppointment || !isHasAppointment.email) {
+        if (!isHasAppointment || isHasAppointment.length == 0) {
             return res.status(409).json({ success: false, isConfirm: false, message: "No Appointment Found" })
         }
 
@@ -384,9 +462,22 @@ async function cancelApp(req, res, next, message) {
 }
 
 
-
-
-
+async function checkApp(req, res, next) {
+    try {
+        const token = req.cookies["token"]
+        if (!token) {
+            return res.status(409).json({ success: false, message: "Login Again" })
+        }
+        const decoded = jwt.verify(token, process.env.MY_TOKEN_KEY)
+        const findUser = await authenticationModel.findOne({
+            useremail: decoded.payload.useremail
+        })
+        const findApp = await booking.find({ userId: findUser._id })
+        return findApp
+    } catch (e) {
+        next(e)
+    }
+}
 
 
 app.use("/auth", (req, res, next) => {
@@ -399,6 +490,9 @@ app.get("/me", (req, res, next) => {
         if (!req.cookies.token) {
             return ResponseFun(res, 409, false, "Login Again")
         }
+
+        resetFun()
+
         return ResponseFun(res, 200, true, "Founed")
     }
     catch (e) {

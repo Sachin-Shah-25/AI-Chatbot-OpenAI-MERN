@@ -29,7 +29,6 @@ export const SignInFun = async (req, res, next) => {
     try {
         const { useremail, userpassword } = req.body
         const userExists = await authenticationModel.findOne({ useremail })
-
         if (!userExists) {
             const err = new Error("Email Not Found");
             err.statusCode = 409;

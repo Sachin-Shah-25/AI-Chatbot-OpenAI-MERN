@@ -9,12 +9,16 @@ import PrevApp from '../Components/PrevApp'
 import receiveaudio from '../assets/receive.wav'
 import sendaudio from '../assets/send.mp3'
 import axios from 'axios'
-import { useState, useEffect, useRef } from 'react'
-import {useLocation} from 'react-router-dom'
+import { useState, useEffect, useRef, useContext } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { AppProvider } from '../ContextProvider/AppContext'
+
 const DABASE_URL = import.meta.env.VITE_DABASE_URL
 const controller = new AbortController();
 function ChatBox() {
+    const { getCurrentTime, setCurrentTime, getHistory, setHistory } = useContext(AppProvider)
+    const [getAppTime, setAppTime] = useState(null)
     const [getuserIntput, setUserInput] = useState("")
     const [botLoading, setBotLoading] = useState(false)
     const location = useLocation()
@@ -36,7 +40,11 @@ function ChatBox() {
     }
     const sendMessageFun = () => {
 
-        setQuestion((prev) => [...prev, { by: "user", user: getuserIntput }])
+        if (getAppTime) {
+            setQuestion((prev) => [...prev, { by: "user", user: getAppTime }])
+        } else {
+            setQuestion((prev) => [...prev, { by: "user", user: getuserIntput }])
+        }
         send.current?.play()
         if (botLoading) {
             return;
@@ -49,11 +57,31 @@ function ChatBox() {
 
                     { message: getuserIntput },
                     { withCredentials: true })
-                if (data.isLogged) {
-                    navigate("/signin")
+                    if(data.message?.includes("logout")){
+                       navigate("/signin")
+                    }
+                // if (data.isLogged) {
+                //     navigate("/signin")
+                // }
+                //  if (!data.success && data.allReady) {
+                //     const allReadyApp = data.allReady
+                //     console.log(data)
+                //     setQuestion((prev) => [...prev, { by: "bot", bot: data.next }])
+                //     return;
+                // }
+                if (!data.success && !data.isConfirm && data.allReady && data.history) {
+                    setQuestion((prev) => [...prev, { by: "bot", bot: "...", history: data.allReady }])
+                    return;
                 }
-                if (!data.success && !data.isConfirm) { // ask next queston
-                    setQuestion((prev) => [...prev, { by: "bot", bot: data.next }])
+                if (!data.success && !data.isConfirm && data.allReady) {
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.msg }])
+                    return;
+                }
+
+                if (!data.success && !data.isConfirm) {
+                    // console.log(data.time[0].available.time)
+
+                    setQuestion((prev) => [...prev, { by: "bot", bot: data.next, time: data.time?.[0].available.time || false }])
                 }
                 else if (!data.success && data.isConfirm) { //ask detail is Ok  
                     setQuestion((prev) => [...prev, { by: "bot", bot: data.confirm }])
@@ -74,25 +102,36 @@ function ChatBox() {
 
             }
             catch (err) {
-
                 const erroCode = err.response ? err.response.status : 500
-
-                if (erroCode >= 400 && erroCode < 500) {
-                    setQuestion((prev) => [...prev, { bot: err.response ? err.response.data.message : "Interval Server Error" }])
-                    // setQuestion()
+                const errMsg = err.response ? err.response.data.message : "Interval Server Error"
+                if (errMsg == "Login Again") {
+                    navigate("/signin")
                 }
+                if (erroCode >= 400 && erroCode < 500) {
+                    setQuestion((prev) => [...prev, { by: "bot", bot: errMsg }])
+
+                }
+
             }
             receive.current?.play()
         }, 2000);
-        setUserInput("")
+        setUserInput("");
+        setCurrentTime(null)
+        setHistory("")
 
 
     }
 
     useEffect(() => {
-       
+        // setAppTime(getCurrentTime)
+        if (getCurrentTime) {
+            setUserInput(getCurrentTime)
+        }
+        if (getHistory) {
+            setUserInput(getHistory)
+        }
         ref.current?.scrollIntoView({ behavior: "smooth" });
-    }, [askQuestion])
+    }, [askQuestion, getHistory, getCurrentTime])
 
     return <>
         <div className="chatbox">
@@ -106,7 +145,7 @@ function ChatBox() {
                 {
                     askQuestion.map((chat, index) => (
                         chat.by === "bot" ?
-                            <BotMessage key={chat.by.at(0) + index} botrep={chat.bot} />
+                            <BotMessage time={chat.time} history={chat.history} key={chat.by.at(0) + index} botrep={chat.bot} />
                             : <UserMessage key={chat.by.at(0) + index} botrep={chat.user} />
 
                     ))

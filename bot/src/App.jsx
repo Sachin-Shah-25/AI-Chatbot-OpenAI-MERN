@@ -25,7 +25,6 @@ function App() {
 
   if (showIntro) return <Intro />;
   return <>
-    {/* <Intro/> */}
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
         <Routes>

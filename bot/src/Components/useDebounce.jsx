@@ -6,7 +6,6 @@ function useDebounce(key_Press){
     const id=setTimeout(()=>{
          if (!key_Press) return;
         setState(true);
-        console.log("Hi")
         setState(false)
     },1000)
 
