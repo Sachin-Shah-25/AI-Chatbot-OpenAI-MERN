@@ -17,8 +17,8 @@ const app = express()
 // "Dermatology"
 
 const option = {
-    origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
-    // origin: ["http://localhost:5173"],
+    // origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
+    origin: ["http://localhost:5173"],
     credentials: true
 }
 app.use(cors(option))
@@ -360,14 +360,17 @@ app.post("/bot/chat", async (req, res, next) => {
                 booked = "book"
                 return res.status(200).json({ success: false, isConfirm: false, next: "You want to book Appointement ?" });
             }
-
+            // console.log(message, " 1")
             if(message=="yes"){
                 booked=="book"
             }
+            // console.log(message, " 2")
             if (message == "yes" && booked == "book") {
                 return await saveApp(req, res, next)
+                // console.log(message, " 3")
             }
-
+            
+            // console.log(message, " 4")
             return res.status(201).json({
                 success: false,
                 message: "Confrim Appointment ",
