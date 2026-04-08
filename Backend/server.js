@@ -17,8 +17,8 @@ const app = express()
 // "Dermatology"
 
 const option = {
-    // origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
-    origin: ["http://localhost:5173"],
+    origin: ["https://ai-chatbot-open-ai-mern.vercel.app"],
+    // origin: ["http://localhost:5173"],
     credentials: true
 }
 app.use(cors(option))
